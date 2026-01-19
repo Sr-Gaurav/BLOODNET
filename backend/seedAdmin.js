@@ -15,9 +15,9 @@ const seedAdmin = async () => {
 
     // Create new admin
     const admin = new Admin({
-      name: "Suraj Savle",
-      email: "suraj@admin.com",
-      password: "bbms@admin", // will be hashed automatically
+      name: "Gaurav",
+      email: "gaurav@admin.com",
+      password: "gaurav@admin", // will be hashed automatically
       role: "admin",
     });
 

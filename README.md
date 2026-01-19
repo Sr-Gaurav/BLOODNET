@@ -1,8 +1,7 @@
-# Blood Bank Management System (BBMS)
+# BLOODNET
 
-## Overview
 
-The **Blood Bank Management System (BBMS)** is a web-based platform designed to streamline the management of blood donations, hospital requests, and inventory tracking. By replacing manual processes with a structured digital workflow, BBMS enables hospitals and blood banks to access real-time inventory, maintain donor records, and process blood requests efficiently.
+The **BLOODNET** is a web-based platform designed to streamline the management of blood donations, hospital requests, and inventory tracking. By replacing manual processes with a structured digital workflow, BBMS enables hospitals and blood banks to access real-time inventory, maintain donor records, and process blood requests efficiently.
 
 
 ## The Problem
@@ -51,11 +50,7 @@ The goal is to ensure quick response times, reduce manual errors, and improve op
 
 ## Environment Setup
 
-### Clone the Repository
 
-```bash
-git clone https://github.com/suraj-savle/blood-bank-management-system.git
-```
 
 ### Backend Setup
 
@@ -66,11 +61,7 @@ npm install
 
 Create a `.env` file:
 
-```bash
-MONGO_URI=your_mongo_uri
-JWT_SECRET=your_jwt_secret
-PORT=5000
-```
+
 
 ### Important: Seed Admin Account (First Time Setup)
 
@@ -78,7 +69,6 @@ Before starting the backend server for the first time, you must create an admin 
 
 ### Open the file: backend/seedAdmin.js
 Update the admin credentials inside the file:
-
 ### Run the seed script from the backend folder:
 
 ```bash
