@@ -4,20 +4,6 @@
 The **BLOODNET** is a web-based platform designed to streamline the management of blood donations, hospital requests, and inventory tracking. By replacing manual processes with a structured digital workflow, BBMS enables hospitals and blood banks to access real-time inventory, maintain donor records, and process blood requests efficiently.
 
 
-## The Problem
-
-Many blood banks still rely on manual documentation, scattered information, and slow communication methods. This leads to:
-
-* No real-time visibility of blood availability
-* Delays during emergency blood requirements
-* Frequent data entry errors
-* Difficulty managing donors, patients, and hospital requests
-* Lack of a centralized system connecting all operations
-
-These limitations reduce the efficiency and reliability of blood bank operations.
-
-
-## Our Solution
 
 BBMS provides an **all-in-one, centralized, and secure system** that handles all operations digitally. Key features include:
 
@@ -47,8 +33,6 @@ The goal is to ensure quick response times, reduce manual errors, and improve op
 * Mongoose
 * JWT Authentication
 * bcrypt for password hashing
-
-## Environment Setup
 
 
 
@@ -90,15 +74,6 @@ cd ../frontend
 npm install
 npm run dev
 ```
-
-**Login Page**
-
-<img width="1920" height="970" alt="image" src="https://github.com/user-attachments/assets/b7796043-c68d-4dda-8203-0be6b79ee5c0" />
-
-
-**Admin Dashboard**
-
-<img width="1920" height="1257" alt="image" src="https://github.com/user-attachments/assets/08f36872-ee09-4716-a66a-316aa1c763d5" />
 
 **Donor ashboard**
 
