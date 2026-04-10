@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: bloodnet-monitor
+  labels:
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: bloodnet
+  endpoints:
+  - targetPort: 5000  
+    path: /metrics
+    interval: 15s

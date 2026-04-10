@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bloodnet-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: bloodnet
+  template:
+    metadata:
+      labels:
+        app: bloodnet
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "5000"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: backend
+        image: gauravmcc/bloodnet-backend   
+        ports:
+        - containerPort: 5000

@@ -1,3 +1,4 @@
+import client from "prom-client";
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
@@ -11,12 +12,29 @@ import { swaggerUi, swaggerDocs } from "./openapi/index.js"
 dotenv.config();
 const app = express();
 
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
+
 app.use(express.json());
 
-app.use(cors({
-  origin: "http://localhost:5173", // or 3000
-  credentials: true,
-}));
+// 📊 Prometheus Metrics Setup
+const collectDefaultMetrics = client.collectDefaultMetrics;
+collectDefaultMetrics();
+
+app.get("/metrics", async (req, res) => {
+  res.set("Content-Type", client.register.contentType);
+  res.end(await client.register.metrics());
+});
+
+
+
+
+
+app.get("/", (req, res) => {
+  res.send("BloodNet Backend Running 🚀");
+});
 
 app.use('/api/doc', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 

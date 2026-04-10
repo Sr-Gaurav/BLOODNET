@@ -1,3 +1,4 @@
+
 import bcrypt from "bcryptjs";
 import Donor from "../models/donorModel.js";
 import Facility from "../models/facilityModel.js";
@@ -9,10 +10,27 @@ import jwt from "jsonwebtoken";
  */
 export const register = async (req, res) => {
   try {
-    const { role } = req.body; // donor | hospital | blood-lab
+    // 🔥 DEBUG: Check incoming data
+    console.log("📩 REQ BODY:", req.body);
 
+    const { role, email } = req.body;
+
+    // ✅ Basic validation
     if (!role) {
       return res.status(400).json({ message: "Role is required" });
+    }
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    // ✅ Check duplicate user
+    const existingUser =
+      (await Donor.findOne({ email })) ||
+      (await Facility.findOne({ email }));
+
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
     }
 
     let user;
@@ -25,11 +43,8 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: "Invalid role" });
     }
 
-    // Decide redirect based on role
     const redirect =
-      role === "donor"
-        ? "/donor/dashboard"
-        : "/"; // hospital/lab back to home after registration
+      role === "donor" ? "/donor/dashboard" : "/";
 
     res.status(201).json({
       success: true,
@@ -40,11 +55,16 @@ export const register = async (req, res) => {
       user: { id: user._id, email: user.email, role: user.role },
       redirect,
     });
+
   } catch (error) {
-    console.error("❌ Registration Error:", error);
-    res
-      .status(500)
-      .json({ message: "Registration failed", error: error.message });
+    // 🔥 FULL ERROR LOG
+    console.error("❌ FULL REGISTRATION ERROR:", error);
+
+    res.status(400).json({
+      message: "Registration failed",
+      error: error.message,
+      details: error.errors || null, // shows validation issues clearly
+    });
   }
 };
 
@@ -55,61 +75,67 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password)
-      return res
-        .status(400)
-        .json({ message: "Email and password are required" });
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email and password are required"
+      });
+    }
 
-    // Find user in any model
+    // 🔍 Find user
     let user =
       (await Donor.findOne({ email }).select("+password")) ||
       (await Admin.findOne({ email }).select("+password")) ||
       (await Facility.findOne({ email }).select("+password"));
 
-    if (!user)
+    if (!user) {
       return res.status(404).json({ message: "User not found" });
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(401).json({ message: "Invalid credentials" });
-
-    // 🚫 If facility not approved yet
-    // ✅ If facility not approved yet
-    if (user instanceof Facility) {
-      if (user.status === "pending") { // <-- FIXED: Use lowercase "pending"
-        return res.status(403).json({
-          success: false,
-          message:
-            "Your account is awaiting admin approval. Please wait before logging in.",
-        });
-      }
-      if (user.status === "rejected") { // <-- FIXED: Use lowercase "rejected"
-        return res.status(403).json({
-          success: false,
-          message:
-            "Your registration has been rejected by admin. Contact support for details.",
-        });
-      }
-      // The code will now only proceed to create a token and redirect if the status is "approved" (or any other value not 'pending' or 'rejected').
     }
 
-    // ✅ Create token
+    // 🔐 Password check
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // 🚫 Facility approval check
+    if (user instanceof Facility) {
+      if (user.status === "pending") {
+        return res.status(403).json({
+          success: false,
+          message: "Your account is awaiting admin approval."
+        });
+      }
+
+      if (user.status === "rejected") {
+        return res.status(403).json({
+          success: false,
+          message: "Your registration has been rejected."
+        });
+      }
+    }
+
+    // ✅ Generate JWT
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    // Save last login
+    // 📊 Update login info
     user.lastLogin = new Date();
+
     if (user instanceof Facility) {
       user.history.push({
         eventType: "Login",
-        description: "Facility logged in successfully",
+        description: "Facility logged in",
         date: new Date(),
       });
-      if (user.history.length > 50) user.history = user.history.slice(-50);
+
+      if (user.history.length > 50) {
+        user.history = user.history.slice(-50);
+      }
     }
+
     await user.save();
 
     // 🎯 Redirect logic
@@ -123,14 +149,22 @@ export const login = async (req, res) => {
       success: true,
       message: "Login successful",
       token,
-      user: { id: user._id, email: user.email, role: user.role, status: user.status }, // ✅ status added
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+        status: user.status
+      },
       redirect,
     });
+
   } catch (error) {
-    console.error("🚨 Login Error:", error);
-    res
-      .status(500)
-      .json({ message: "Login failed", error: error.message });
+    console.error("🚨 LOGIN ERROR:", error);
+
+    res.status(500).json({
+      message: "Login failed",
+      error: error.message
+    });
   }
 };
 
@@ -140,6 +174,7 @@ export const login = async (req, res) => {
 export const getProfile = async (req, res) => {
   try {
     let user;
+
     if (req.user.role === "donor") {
       user = await Donor.findById(req.user.id).select("-password");
     } else if (req.user.role === "admin") {
@@ -148,12 +183,18 @@ export const getProfile = async (req, res) => {
       user = await Facility.findById(req.user.id).select("-password");
     }
 
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     res.status(200).json({ user });
+
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error fetching profile", error: error.message });
+    console.error("🚨 PROFILE ERROR:", error);
+
+    res.status(500).json({
+      message: "Error fetching profile",
+      error: error.message
+    });
   }
 };
