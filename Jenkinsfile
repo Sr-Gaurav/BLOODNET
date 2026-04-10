@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         COMPOSE = "/usr/local/bin/docker-compose"
-        TERRAFORM = "/usr/local/bin/terraform"
+        TERRAFORM = "/opt/homebrew/bin/terraform"
     }
 
     stages {
